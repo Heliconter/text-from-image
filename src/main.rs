@@ -39,7 +39,9 @@ fn recognize_text_in_separate_thread_and_show_results(path: PathBuf, window: &im
 
     std::thread::spawn(move || {
         let mut lt = leptess::LepTess::new(Some("./tessdata"), "eng+rus").unwrap();
-        lt.set_image(path).unwrap();
+        let image_bytes = std::fs::read(path).unwrap();
+        lt.set_image_from_mem(&image_bytes).unwrap();
+        // lt.set_image(path).unwrap(); - leads to error when Cyrillic in the path on Windows
         let text: String = lt.get_utf8_text().unwrap();
         sender.send(text).unwrap();
     });
