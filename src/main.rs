@@ -38,7 +38,7 @@ fn recognize_text_in_separate_thread_and_show_results(path: PathBuf, window: &im
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
     std::thread::spawn(move || {
-        let mut lt = leptess::LepTess::new(Some("./tessdata"), "eng").unwrap();
+        let mut lt = leptess::LepTess::new(Some("./tessdata"), "eng+rus").unwrap();
         lt.set_image(path).unwrap();
         let text: String = lt.get_utf8_text().unwrap();
         sender.send(text).unwrap();
