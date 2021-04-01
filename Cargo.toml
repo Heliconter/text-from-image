@@ -8,7 +8,7 @@ edition = "2018"
 gtk = { version = "0.9", features = ["v3_20"]}
 gio = { version = "", features = ["v2_44"]}
 glib = ""
-leptess = "0.11.0"
+leptess = {git = "https://github.com/Heliconter/leptess.git"}
 
 [profile.dev]
 debug = 0 
