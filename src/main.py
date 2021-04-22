@@ -60,7 +60,7 @@ class Ui_MainWindow(object):
 
 
     def openFile(self):
-        path = QFileDialog.getOpenFileName()[0]
+        path = QFileDialog.getOpenFileName(None, 'Open File', './', "Image (*.png *.jpg *jpeg)")[0]
 
         pixmap = QPixmap(path)
         scene = QGraphicsScene(0,0,pixmap.width(),pixmap.height())
