@@ -1,22 +1,27 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QFileDialog, QGraphicsScene
+from PyQt5.QtGui import QPixmap, QWheelEvent
+from PyQt5.QtWidgets import QFileDialog, QGraphicsScene, QWidget
+from PyQt5.QtWidgets import QGraphicsView
 
 from PIL import Image
 import pytesseract as tess
+import asyncio
 
 # tess.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+from src.GraphicsView import GraphicsView
 
 
-class Ui_MainWindow(object):
+class Ui_MainWindow(QWidget):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1150, 600)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
-        self.graphicsView.setGeometry(QtCore.QRect(5, 5, 810, 550))
-        self.graphicsView.setObjectName("graphicsView")
+        self.graphicsView = GraphicsView(self.centralwidget)
+        # self.graphicsView.setupUi()
+        # self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
+        # self.graphicsView.setGeometry(QtCore.QRect(5, 5, 810, 550))
+        # self.graphicsView.setObjectName("graphicsView")
         self.listWidget = QtWidgets.QListWidget(self.centralwidget)
         self.listWidget.setGeometry(QtCore.QRect(820, 5, 322, 500))
         self.listWidget.setObjectName("listWidget")
@@ -65,11 +70,19 @@ class Ui_MainWindow(object):
         pixmap = QPixmap(path)
         scene = QGraphicsScene(0,0,pixmap.width(),pixmap.height())
         scene.addPixmap(pixmap)
+        self.graphicsView.zoom = 1
         self.graphicsView.setScene(scene)
 
         img = Image.open(path)
         text = tess.image_to_string(img, lang='eng+rus')
         self.label.setText(text)
+
+    # def mouse
+
+    # def mou
+
+
+
 
 
 if __name__ == "__main__":
