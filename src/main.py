@@ -13,14 +13,11 @@ class Window(QMainWindow):
 
         self.setWindowTitle("text-from-image")
 
-        self.central_widget = QWidget(self)
+        self.central_widget = QSplitter(self)
         self.setCentralWidget(self.central_widget)
 
-        self.central_layout = QHBoxLayout()
-        self.central_widget.setLayout(self.central_layout)
-
         self.image_view = ImageView()
-        self.central_layout.addWidget(self.image_view)
+        self.central_widget.addWidget(self.image_view)
 
         self.recognized_view = QLabel()
         self.recognized_view.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
@@ -28,9 +25,11 @@ class Window(QMainWindow):
         scroll_area.setMinimumSize(300, 400)
         scroll_area.setWidgetResizable(True)
         scroll_area.setWidget(self.recognized_view)
-        self.central_layout.addWidget(scroll_area)
+        self.central_widget.addWidget(scroll_area)
 
-        scroll_area.setWidget(self.recognized_view)
+        self.central_widget.setSizes([10000000, 10000000])
+        self.central_widget.setStretchFactor(0, 1)
+        self.central_widget.setStretchFactor(1, 1)
 
         self.menubar = QMenuBar(self)
         self.setMenuBar(self.menubar)
@@ -50,8 +49,7 @@ class Window(QMainWindow):
 
             img = Image.open(path)
             text = tess.image_to_string(img, lang='eng+rus')
-            print(text)
-            self.recognized_view.setText(text + 'dslkfj')
+            self.recognized_view.setText(text)
 
 
 if __name__ == "__main__":
