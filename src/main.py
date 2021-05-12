@@ -11,7 +11,7 @@ class Window(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("text-to-image")
+        self.setWindowTitle("text-from-image")
 
         self.central_widget = QWidget(self)
         self.setCentralWidget(self.central_widget)
