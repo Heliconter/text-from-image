@@ -13,13 +13,13 @@ class ImageItem(QGraphicsPixmapItem):
         self,
         parent = None,
         on_rect_start: Notification = None,
-        on_rect_move: Notification = None,
+        on_rect_resize: Notification = None,
         on_rect_end: Notification = None
     ):
         super().__init__(parent)
 
         self.on_rect_start = on_rect_start
-        self.on_rect_move = on_rect_move
+        self.on_rect_resize = on_rect_resize
         self.on_rect_end = on_rect_end
 
         self._start: QPointF = None
@@ -31,9 +31,9 @@ class ImageItem(QGraphicsPixmapItem):
                 self.on_rect_start(QRectF(self._start, self._start).normalized())
 
     def mouseMoveEvent(self, event):
-        if self.on_rect_move and event.buttons() & Qt.LeftButton:
+        if self.on_rect_resize and event.buttons() & Qt.LeftButton:
             end = normalize_pos(self, event.pos())
-            self.on_rect_move(QRectF(self._start, end).normalized())
+            self.on_rect_resize(QRectF(self._start, end).normalized())
 
     def mouseReleaseEvent(self, event):
         if self.on_rect_end and event.button() & Qt.LeftButton:
