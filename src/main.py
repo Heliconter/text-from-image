@@ -1,11 +1,10 @@
 import sys
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
+from PySide2.QtWidgets import QMainWindow, QSplitter, QLabel, QScrollArea, QMenuBar, QMenu, QAction, QFileDialog, QApplication
+from PySide2.QtCore import Qt
 from PIL import Image
 import pytesseract as tess
 
 from ImageView import ImageView
-
 
 class Window(QMainWindow):
     def __init__(self, parent=None):
@@ -17,6 +16,11 @@ class Window(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         self.image_view = ImageView()
+        # scroll_area = QScrollArea()
+        # scroll_area.setMinimumSize(600, 400)
+        # scroll_area.setWidgetResizable(True)
+        # scroll_area.setWidget(self.image_view)
+        # self.central_widget.addWidget(scroll_area)
         self.central_widget.addWidget(self.image_view)
 
         self.recognized_view = QLabel()
