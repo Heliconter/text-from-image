@@ -1,11 +1,34 @@
 import sys
 from PySide2.QtWidgets import QMainWindow, QSplitter, QLabel, QScrollArea, QMenuBar, QMenu, QAction, QFileDialog, QApplication
-from PySide2.QtCore import Qt, Slot, QRectF, QSizeF
+from PySide2.QtCore import Qt, Slot, QRectF, QSizeF, QObject, Signal, QThread
 from PIL import Image
 import pytesseract as tess
 
 from ImageView import ImageView
 from denormalize_rect import denormalize_rect
+
+class Recognizer(QObject):
+    finished = Signal(str)
+    
+    def __init__(self, image_path: str, rect: QRectF = None):
+        super().__init__()
+
+        self.image_path = image_path
+        self.rect = rect
+
+    def run(self):
+        img = Image.open(self.image_path)
+        if self.rect:
+            img_size = QSizeF(img.size[0], img.size[1])
+            rect = denormalize_rect(img_size, self.rect)
+            img = img.crop((
+                rect.left(),
+                rect.top(),
+                rect.right(),
+                rect.bottom()
+            ))
+        text = tess.image_to_string(img, lang='eng+rus')
+        self.finished.emit(text)
 
 class Window(QMainWindow):
     def __init__(self, parent=None):
@@ -43,18 +66,18 @@ class Window(QMainWindow):
         self.open_image_action.triggered.connect(self.open_image)
 
     def recognize(self, rect: QRectF = None):
-        img = Image.open(self.image_path)
-        if rect:
-            img_size = QSizeF(img.size[0], img.size[1])
-            rect = denormalize_rect(img_size, rect)
-            img = img.crop((
-                rect.left(),
-                rect.top(),
-                rect.right(),
-                rect.bottom()
-            ))
-        text = tess.image_to_string(img, lang='eng+rus')
-        self.recognized_view.setText(text)
+        self.recognized_view.setText('Recognizing...')
+
+        self.thread = QThread()
+        self.recognizer = Recognizer(self.image_path, rect)
+        self.recognizer.moveToThread(self.thread)
+
+        self.thread.started.connect(self.recognizer.run)
+        self.recognizer.finished.connect(lambda text: self.thread.quit())
+
+        self.recognizer.finished.connect(lambda text: self.recognized_view.setText(text))
+
+        self.thread.start()
 
     @Slot(QRectF)
     def on_rect_set(self, rect: QRectF):
