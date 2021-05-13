@@ -1,26 +1,24 @@
 import sys
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
+from PySide2.QtWidgets import QMainWindow, QSplitter, QLabel, QScrollArea, QMenuBar, QMenu, QAction, QFileDialog, QApplication
+from PySide2.QtCore import Qt, Slot, QRectF, QSizeF
 from PIL import Image
 import pytesseract as tess
 
 from ImageView import ImageView
-
+from denormalize_rect import denormalize_rect
 
 class Window(QMainWindow):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent)  
 
         self.setWindowTitle("text-from-image")
 
-        self.central_widget = QWidget(self)
+        self.central_widget = QSplitter(self)
         self.setCentralWidget(self.central_widget)
 
-        self.central_layout = QHBoxLayout()
-        self.central_widget.setLayout(self.central_layout)
-
         self.image_view = ImageView()
-        self.central_layout.addWidget(self.image_view)
+        self.image_view.rect_set.connect(self.on_rect_set)
+        self.central_widget.addWidget(self.image_view)
 
         self.recognized_view = QLabel()
         self.recognized_view.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
@@ -28,9 +26,11 @@ class Window(QMainWindow):
         scroll_area.setMinimumSize(300, 400)
         scroll_area.setWidgetResizable(True)
         scroll_area.setWidget(self.recognized_view)
-        self.central_layout.addWidget(scroll_area)
+        self.central_widget.addWidget(scroll_area)
 
-        scroll_area.setWidget(self.recognized_view)
+        self.central_widget.setSizes([10000000, 10000000])
+        self.central_widget.setStretchFactor(0, 1)
+        self.central_widget.setStretchFactor(1, 1)
 
         self.menubar = QMenuBar(self)
         self.setMenuBar(self.menubar)
@@ -42,16 +42,31 @@ class Window(QMainWindow):
         self.file_menu.addAction(self.open_image_action)
         self.open_image_action.triggered.connect(self.open_image)
 
+    def recognize(self, rect: QRectF = None):
+        img = Image.open(self.image_path)
+        if rect:
+            img_size = QSizeF(img.size[0], img.size[1])
+            rect = denormalize_rect(img_size, rect)
+            img = img.crop((
+                rect.left(),
+                rect.top(),
+                rect.right(),
+                rect.bottom()
+            ))
+        text = tess.image_to_string(img, lang='eng+rus')
+        self.recognized_view.setText(text)
+
+    @Slot(QRectF)
+    def on_rect_set(self, rect: QRectF):
+        self.recognize(rect)
+
     def open_image(self):
         path = QFileDialog.getOpenFileName(None, 'Open File', './', 'Image (*.png *.jpg *jpeg)')[0]
 
         if path:
+            self.image_path = path
             self.image_view.open_image(path)
-
-            img = Image.open(path)
-            text = tess.image_to_string(img, lang='eng+rus')
-            print(text)
-            self.recognized_view.setText(text + 'dslkfj')
+            self.recognize()
 
 
 if __name__ == "__main__":
