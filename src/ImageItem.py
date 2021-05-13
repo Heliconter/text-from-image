@@ -1,12 +1,6 @@
-from PySide2.QtWidgets import QWidget, QLabel, QSizePolicy, QGraphicsPixmapItem, QGraphicsItem
-from PySide2.QtGui import QPixmap
+from PySide2.QtWidgets import QGraphicsPixmapItem, QGraphicsItem
 from PySide2.QtCore import Qt, QPointF, QRectF
 from typing import Callable
-
-def build_rect(p1: QPointF, p2: QPointF) -> QRectF:
-    left_top = QPointF(min(p1.x(), p2.x()), min(p1.y(), p2.y()))
-    rigth_bottom = QPointF(max(p1.x(), p2.x()), max(p1.y(), p2.y()))
-    return QRectF(left_top, rigth_bottom)
 
 def normalize_pos(widget: QGraphicsItem, pos: QPointF) -> QPointF:
     bounding = widget.boundingRect()
@@ -31,18 +25,18 @@ class ImageItem(QGraphicsPixmapItem):
         self._start: QPointF = None
 
     def mousePressEvent(self, event):
-        if self.on_rect_start and event.buttons() & Qt.LeftButton:
+        if event.buttons() & Qt.LeftButton:
             self._start = normalize_pos(self, event.pos())
-            self.on_rect_start(build_rect(self._start, self._start))
+            if self.on_rect_start:
+                self.on_rect_start(QRectF(self._start, self._start).normalized())
 
     def mouseMoveEvent(self, event):
         if self.on_rect_move and event.buttons() & Qt.LeftButton:
             end = normalize_pos(self, event.pos())
-            self.on_rect_move(build_rect(self._start, end))
+            self.on_rect_move(QRectF(self._start, end).normalized())
 
     def mouseReleaseEvent(self, event):
         if self.on_rect_end and event.button() & Qt.LeftButton:
             end = normalize_pos(self, event.pos())
-            rect = build_rect(self._start, end)
-            self.on_rect_end(rect)
+            self.on_rect_end(QRectF(self._start, end).normalized())
 
