@@ -45,9 +45,14 @@ class Window(QMainWindow):
     def recognize(self, rect: QRectF = None):
         img = Image.open(self.image_path)
         if rect:
-            rect = denormalize_rect(QSizeF(img.size[0], img.size[1]), rect)
-            print(rect)
-            img = img.crop((rect.x(), rect.y(), rect.width(), rect.height()))
+            img_size = QSizeF(img.size[0], img.size[1])
+            rect = denormalize_rect(img_size, rect)
+            img = img.crop((
+                rect.left(),
+                rect.top(),
+                rect.right(),
+                rect.bottom()
+            ))
         text = tess.image_to_string(img, lang='eng+rus')
         self.recognized_view.setText(text)
 
