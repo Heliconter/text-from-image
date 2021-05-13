@@ -1,95 +1,61 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtGui import QPixmap, QWheelEvent
-from PyQt5.QtWidgets import QFileDialog, QGraphicsScene, QWidget
-from PyQt5.QtWidgets import QGraphicsView
-
+import sys
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt
 from PIL import Image
 import pytesseract as tess
-import asyncio
 
-# tess.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
-from src.GraphicsView import GraphicsView
+from ImageView import ImageView
 
 
-class Ui_MainWindow(QWidget):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1150, 600)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.graphicsView = GraphicsView(self.centralwidget)
-        # self.graphicsView.setupUi()
-        # self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
-        # self.graphicsView.setGeometry(QtCore.QRect(5, 5, 810, 550))
-        # self.graphicsView.setObjectName("graphicsView")
-        self.listWidget = QtWidgets.QListWidget(self.centralwidget)
-        self.listWidget.setGeometry(QtCore.QRect(820, 5, 322, 500))
-        self.listWidget.setObjectName("listWidget")
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(820, 509, 322, 45))
-        self.pushButton.setObjectName("pushButton")
-        self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(830, 10, 301, 491))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
-        self.label.setSizePolicy(sizePolicy)
-        self.label.setText("")
-        self.label.setObjectName("label")
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1150, 21))
-        self.menubar.setObjectName("menubar")
-        self.menuMenu = QtWidgets.QMenu(self.menubar)
-        self.menuMenu.setObjectName("menuMenu")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
-        self.actionAdd_image = QtWidgets.QAction(MainWindow)
-        self.actionAdd_image.setObjectName("actionAdd_image")
-        self.actionAdd_image.triggered.connect(lambda: self.openFile())
-        self.menuMenu.addAction(self.actionAdd_image)
-        self.menubar.addAction(self.menuMenu.menuAction())
+class Window(QMainWindow):
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.setWindowTitle("text-from-image")
 
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.pushButton.setText(_translate("MainWindow", "Load data"))
-        self.menuMenu.setTitle(_translate("MainWindow", "Menu"))
-        self.actionAdd_image.setText(_translate("MainWindow", "Add image"))
+        self.central_widget = QWidget(self)
+        self.setCentralWidget(self.central_widget)
 
+        self.central_layout = QHBoxLayout()
+        self.central_widget.setLayout(self.central_layout)
 
-    def openFile(self):
-        path = QFileDialog.getOpenFileName(None, 'Open File', './', "Image (*.png *.jpg *jpeg)")[0]
+        self.image_view = ImageView()
+        self.central_layout.addWidget(self.image_view)
 
-        pixmap = QPixmap(path)
-        scene = QGraphicsScene(0,0,pixmap.width(),pixmap.height())
-        scene.addPixmap(pixmap)
-        self.graphicsView.zoom = 1
-        self.graphicsView.setScene(scene)
+        self.recognized_view = QLabel()
+        self.recognized_view.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
+        scroll_area = QScrollArea()
+        scroll_area.setMinimumSize(300, 400)
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(self.recognized_view)
+        self.central_layout.addWidget(scroll_area)
 
-        img = Image.open(path)
-        text = tess.image_to_string(img, lang='eng+rus')
-        self.label.setText(text)
+        scroll_area.setWidget(self.recognized_view)
 
-    # def mouse
+        self.menubar = QMenuBar(self)
+        self.setMenuBar(self.menubar)
 
-    # def mou
+        self.file_menu = QMenu("&File", self)
+        self.menubar.addMenu(self.file_menu)
 
+        self.open_image_action = QAction('&Open image', self)
+        self.file_menu.addAction(self.open_image_action)
+        self.open_image_action.triggered.connect(self.open_image)
 
+    def open_image(self):
+        path = QFileDialog.getOpenFileName(None, 'Open File', './', 'Image (*.png *.jpg *jpeg)')[0]
 
+        if path:
+            self.image_view.open_image(path)
+
+            img = Image.open(path)
+            text = tess.image_to_string(img, lang='eng+rus')
+            print(text)
+            self.recognized_view.setText(text + 'dslkfj')
 
 
 if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
+    app = QApplication(sys.argv)
+    window = Window()
+    window.show()
     sys.exit(app.exec_())
