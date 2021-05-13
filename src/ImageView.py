@@ -17,7 +17,7 @@ class ImageView(QGraphicsView):
         self.image_item = ImageItem(
             on_rect_start = self.update_rect,
             on_rect_resize = self.update_rect,
-            on_rect_end = self.set_rect,
+            on_rect_end = self.end_rect,
         )
         self.scene.addItem(self.image_item)
         self.setScene(self.scene)
@@ -34,14 +34,20 @@ class ImageView(QGraphicsView):
         else:
             self.rect_item.setRect(rect)
 
-    def set_rect(self, rect: QRectF):
+    def end_rect(self, rect: QRectF):
         self.update_rect(rect)
         self.rect_set.emit(rect)
+
+    def reset_rect(self):
+        if self.rect_item:
+            self.scene.removeItem(self.rect_item)
+            self.rect_item = None
 
     def open_image(self, path):
         pixmap = QPixmap(path)
         self.image_item.setPixmap(pixmap)
         self.fitInView(self.image_item, Qt.KeepAspectRatio)
+        self.reset_rect()
 
     def resizeEvent(self, event):
         if self.image_item:
