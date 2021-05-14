@@ -1,6 +1,6 @@
 import sys
-from PySide2.QtWidgets import QMainWindow, QSplitter, QLabel, QScrollArea, QMenuBar, QMenu, QAction, QFileDialog, QApplication
-from PySide2.QtCore import Qt, Slot, QRectF, QSizeF, QObject, Signal, QThread
+from PyQt5.QtWidgets import QMainWindow, QSplitter, QLabel, QScrollArea, QMenuBar, QMenu, QAction, QFileDialog, QApplication
+from PyQt5.QtCore import Qt, QRectF, QSizeF, QObject, pyqtSignal, QThread
 from PIL import Image
 import pytesseract as tess
 
@@ -8,7 +8,7 @@ from ImageView import ImageView
 from denormalize_rect import denormalize_rect
 
 class Recognizer(QObject):
-    finished = Signal(str)
+    finished = pyqtSignal(str)
     
     def __init__(self, image_path: str, rect: QRectF = None):
         super().__init__()
@@ -22,10 +22,10 @@ class Recognizer(QObject):
             img_size = QSizeF(img.size[0], img.size[1])
             rect = denormalize_rect(img_size, self.rect)
             img = img.crop((
-                rect.left(),
-                rect.top(),
-                rect.right(),
-                rect.bottom()
+                int(rect.left()),
+                int(rect.top()),
+                int(rect.right()),
+                int(rect.bottom())
             ))
         text = tess.image_to_string(img, lang='eng+rus')
         self.finished.emit(text)
@@ -44,7 +44,11 @@ class Window(QMainWindow):
         self.central_widget.addWidget(self.image_view)
 
         self.recognized_view = QLabel()
-        self.recognized_view.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
+        self.recognized_view.setTextInteractionFlags(
+            self.recognized_view.textInteractionFlags() |
+            Qt.TextInteractionFlag.TextSelectableByMouse |
+            Qt.TextInteractionFlag.TextSelectableByKeyboard
+        )
         scroll_area = QScrollArea()
         scroll_area.setMinimumSize(300, 400)
         scroll_area.setWidgetResizable(True)
@@ -68,18 +72,17 @@ class Window(QMainWindow):
     def recognize(self, rect: QRectF = None):
         self.recognized_view.setText('Recognizing...')
 
-        self.thread = QThread()
+        self._thread = QThread()
         self.recognizer = Recognizer(self.image_path, rect)
-        self.recognizer.moveToThread(self.thread)
+        self.recognizer.moveToThread(self._thread)
 
-        self.thread.started.connect(self.recognizer.run)
-        self.recognizer.finished.connect(lambda text: self.thread.quit())
+        self._thread.started.connect(self.recognizer.run)
+        self.recognizer.finished.connect(lambda text: self._thread.quit())
 
         self.recognizer.finished.connect(lambda text: self.recognized_view.setText(text))
 
-        self.thread.start()
+        self._thread.start()
 
-    @Slot(QRectF)
     def on_rect_set(self, rect: QRectF):
         self.recognize(rect)
 

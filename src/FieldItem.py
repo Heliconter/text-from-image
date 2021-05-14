@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QGraphicsRectItem, QGraphicsTextItem
-from PySide2.QtCore import Qt, QRectF, QSizeF
-from PySide2.QtGui import QBrush, QPainter, QColor, QPen, QTextDocument
+from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsTextItem
+from PyQt5.QtCore import Qt, QRectF, QSizeF
+from PyQt5.QtGui import QBrush, QPainter, QColor, QPen, QTextDocument
 
 
 class FieldItem(QGraphicsRectItem):
@@ -20,7 +20,7 @@ class FieldItem(QGraphicsRectItem):
         super().setRect(QRectF(0, 0, size.width(), size.height()))
 
     def paint(self, painter: QPainter, option, widget):
-        painter.setPen(QPen(Qt.black))
+        painter.setPen(QPen(Qt.GlobalColor.black))
         super().paint(painter, option, widget)
         painter.setBrush(QBrush(QColor(255, 255, 255, 128)))
         painter.drawRect(self.rect())

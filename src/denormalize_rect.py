@@ -1,4 +1,4 @@
-from PySide2.QtCore import QRectF, QSizeF
+from PyQt5.QtCore import QRectF, QSizeF
 
 
 def denormalize_rect(area: QSizeF, rect: QRectF) -> QRectF:
