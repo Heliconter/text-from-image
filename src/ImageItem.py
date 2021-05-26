@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGraphicsPixmapItem, QGraphicsItem
+from PyQt5.QtWidgets import QGraphicsPixmapItem, QGraphicsItem, QGraphicsSceneMouseEvent
 from PyQt5.QtCore import Qt, QPointF, QRectF
 from typing import Callable, Optional
 
@@ -11,10 +11,10 @@ class ImageItem(QGraphicsPixmapItem):
 
     def __init__(
         self,
-        parent = None,
-        on_rect_start: Notification = None,
-        on_rect_resize: Notification = None,
-        on_rect_end: Notification = None
+        parent: Optional[QGraphicsItem] = None,
+        on_rect_start: Optional[Notification] = None,
+        on_rect_resize: Optional[Notification] = None,
+        on_rect_end: Optional[Notification] = None
     ):
         super().__init__(parent)
 
@@ -24,21 +24,20 @@ class ImageItem(QGraphicsPixmapItem):
 
         self._start: Optional[QPointF] = None
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         if event.buttons() & Qt.MouseButton.LeftButton:
             self._start = normalize_pos(self, event.pos())
             if self.on_rect_start:
                 self.on_rect_start(QRectF(self._start, self._start).normalized())
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent):
         if self.on_rect_resize and event.buttons() & Qt.MouseButton.LeftButton:
             end = normalize_pos(self, event.pos())
             if self._start:
                 self.on_rect_resize(QRectF(self._start, end).normalized())
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         if self.on_rect_end and event.button() & Qt.MouseButton.LeftButton:
             end = normalize_pos(self, event.pos())
             if self._start:
                 self.on_rect_end(QRectF(self._start, end).normalized())
-
