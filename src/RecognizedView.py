@@ -39,10 +39,8 @@ class RecognizedView(QScrollArea):
         self.container_layout.addWidget(label, rows, 1)
         self.container_layout.addWidget(delete_button, rows, 2)
 
-        runtime_field.recognized_changed.connect(lambda text: label.setText(text))
-        def on_field_delete():
-            name.deleteLater()
-            delete_button.deleteLater()
-            label.deleteLater()
-        runtime_field.destroyed.connect(on_field_delete) # type: ignore
-        delete_button.clicked.connect(lambda: runtime_field.deleteLater()) # type: ignore
+        runtime_field.recognized_changed.connect(label.setText)
+        runtime_field.destroyed.connect(name.deleteLater) # type: ignore
+        runtime_field.destroyed.connect(delete_button.deleteLater) # type: ignore
+        runtime_field.destroyed.connect(label.deleteLater) # type: ignore
+        delete_button.clicked.connect(runtime_field.deleteLater) # type: ignore

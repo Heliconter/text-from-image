@@ -1,5 +1,5 @@
 import sys
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 from PyQt5.QtWidgets import QMainWindow, QSplitter, QMenuBar, QMenu, QAction, QFileDialog, QApplication
 from PyQt5.QtCore import QRectF, QSizeF, QObject, pyqtSignal, QThread
 from PIL import Image
@@ -63,25 +63,33 @@ class Window(QMainWindow):
         self.file_menu.addAction(self.open_image_action)
         self.open_image_action.triggered.connect(self.open_image) # type: ignore
 
-    def recognize(self, rect: QRectF, callback: Callable[[str], Any]):
-        self._thread = QThread()
-        self.recognizer = Recognizer(self.image_path, rect)
-        self.recognizer.moveToThread(self._thread)
+    _recognizers: set[Recognizer] = set();
+    def remove_recognizer(self, recognizer: Recognizer):
+        self._recognizers.remove(recognizer)
+    def recognize(self, runtime_field: RuntimeField):
+        thread = QThread(self)
+        recognizer = Recognizer(self.image_path, runtime_field.field.rect)
+        self._recognizers.add(recognizer)
+        recognizer.moveToThread(thread)
 
-        self._thread.started.connect(self.recognizer.run) # type: ignore
-        self.recognizer.finished.connect(lambda text: self._thread.quit())
+        thread.started.connect(recognizer.run) # type: ignore
 
-        self.recognizer.finished.connect(lambda text: callback(text))
+        recognizer.finished.connect(runtime_field.set_recognized)
+        recognizer.finished.connect(thread.quit)
+        recognizer.finished.connect(recognizer.deleteLater)
+        recognizer.destroyed.connect(self.remove_recognizer) # type: ignore
+        thread.finished.connect(thread.deleteLater) # type: ignore
 
-        self._thread.start()
+        thread.start()
 
     def on_new_field(self, runtime_field: RuntimeField):
         self.image_changed.connect(runtime_field.underlying_image_changed)
         self.recognized_view.add_field(runtime_field)
         def recognize_in_field():
             runtime_field.set_recognized('Recognizing...')
-            self.recognize(runtime_field.field.rect, lambda text: runtime_field.set_recognized(text))
-        self.image_changed.connect(recognize_in_field)
+            self.recognize(runtime_field)
+        connection = self.image_changed.connect(recognize_in_field)
+        runtime_field.destroyed.connect(lambda: self.disconnect(connection)) # type: ignore
         recognize_in_field()
 
     image_changed = pyqtSignal()
