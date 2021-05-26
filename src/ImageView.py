@@ -15,9 +15,7 @@ class ImageView(QGraphicsView):
 
         self._scene = QGraphicsScene()
         self.image_item = ImageItem(
-            # on_rect_start = self.update_rect,
             on_rect_start = self.start_rect_item,
-            # on_rect_resize = self.update_rect,
             on_rect_resize = self.update_rect_item,
             on_rect_end = self.end_rect,
         )
@@ -25,14 +23,6 @@ class ImageView(QGraphicsView):
         self.setScene(self._scene)
 
         self.rect_item = None
-
-    # def update_rect(self, rect: QRectF):
-    #     rect = denormalize_rect(self.image_item.boundingRect().size(), rect)
-    #     if not self.rect_item:
-    #         self.rect_item = FieldItem(rect)
-    #         self._scene.addItem(self.rect_item)
-    #     else:
-    #         self.rect_item.set_rect(rect)
 
     new_field = pyqtSignal(RuntimeField)
 

@@ -1,5 +1,5 @@
 from typing import Optional
-from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QLineEdit, QPushButton, QScrollArea, QLabel, QSizePolicy, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QGridLayout, QLineEdit, QPushButton, QScrollArea, QLabel, QSizePolicy, QWidget
 from PyQt5.QtCore import Qt
 from Field import RuntimeField
 
@@ -39,15 +39,8 @@ class RecognizedView(QScrollArea):
         self.container_layout.addWidget(label, rows, 1)
         self.container_layout.addWidget(delete_button, rows, 2)
 
-        # line.addWidget(name)
-        # line.addWidget(label)
-        # line.addWidget(delete_button)
-        # self.container_layout.addLayout(line)
-
         runtime_field.recognized_changed.connect(lambda text: label.setText(text))
         def on_field_delete():
-            # self.container_layout.removeItem(line)
-            # line.deleteLater()
             name.deleteLater()
             delete_button.deleteLater()
             label.deleteLater()
