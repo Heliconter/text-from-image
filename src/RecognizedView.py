@@ -28,7 +28,7 @@ class RecognizedView(QScrollArea):
 
     def add_field(self, runtime_field: RuntimeField):
         name = QLineEdit()
-        name.setText(runtime_field.field.name)
+        name.setText('Area ' + self.container_layout.rowCount().__str__())
         label = create_label()
         delete_button = QPushButton()
         delete_button.setText('X')
