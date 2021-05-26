@@ -30,7 +30,8 @@ class Recognizer(QObject):
                 int(rect.right()),
                 int(rect.bottom())
             ))
-        text = tess.image_to_string(img, lang='eng+rus') # type: ignore
+        config = r'--oem 3 --psm 6'
+        text = tess.image_to_string(img, lang='eng+rus', config=config) # type: ignore
         self.finished.emit(text)
 
 class Window(QMainWindow):
